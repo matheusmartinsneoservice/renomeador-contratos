@@ -1,4 +1,27 @@
 import streamlit as st
+
+if "autenticado" not in st.session_state:
+    st.session_state["autenticado"] = False
+
+if not st.session_state["autenticado"]:
+
+    senha = st.text_input(
+        "Senha de acesso",
+        type="password"
+    )
+
+    if st.button("Entrar"):
+
+        if senha == SENHA:
+
+            st.session_state["autenticado"] = True
+            st.rerun()
+
+        else:
+
+            st.error("Senha inválida")
+
+    st.stop()
 import pandas as pd
 import base64
 import streamlit.components.v1 as components
