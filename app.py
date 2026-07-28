@@ -12,7 +12,7 @@ if not st.session_state["autenticado"]:
 
     if st.button("Entrar"):
 
-        if senha == SENHA:
+        if senha == st.secrets["senha"]:
 
             st.session_state["autenticado"] = True
             st.rerun()
