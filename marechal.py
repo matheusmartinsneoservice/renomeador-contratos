@@ -61,6 +61,21 @@ def extrair_lote(texto):
 
     return None
 
+def extrair_cliente_pdf(texto):
+
+    match = re.search(
+        r"COMPRADOR\s*SRº?\(A\)\s*([A-Z\s]+?)\s*DE\s+NACIONALIDADE",
+        texto,
+        re.IGNORECASE
+    )
+
+    if match:
+
+        return limpar_texto(
+            match.group(1)
+        )
+
+    return None
 
 def limpar_texto(texto):
 
@@ -85,6 +100,7 @@ def limpar_texto(texto):
 def localizar_cliente(
     quadra,
     lote,
+    cliente_pdf,
     tabela
 ):
 
@@ -116,12 +132,35 @@ def localizar_cliente(
 
         return "CLIENTE NÃO ENCONTRADO"
 
-    cliente = candidatos.iloc[0]["Cliente"]
+    if len(candidatos) == 1:
 
-    return limpar_texto(
-        cliente
-    )
+        return limpar_texto(
+            candidatos.iloc[0]["Cliente"]
+        )
 
+    cliente_pdf = limpar_texto(
+        cliente_pdf or ""
+    ).upper()
+
+    for _, linha in candidatos.iterrows():
+
+        cliente_tabela = limpar_texto(
+            linha["Cliente"]
+        ).upper()
+
+        if cliente_pdf in cliente_tabela:
+
+            return limpar_texto(
+                linha["Cliente"]
+            )
+
+        if cliente_tabela in cliente_pdf:
+
+            return limpar_texto(
+                linha["Cliente"]
+            )
+
+    return "CLIENTE DUPLICADO - VALIDAR"
 
 def gerar_nome(
     quadra,
@@ -148,14 +187,16 @@ def processar_marechal(
     tabela
 ):
 
-    st.write(tabela)
-
     nomes = []
 
     for pdf in pdfs:
 
         texto = extrair_texto(
             pdf
+        )
+
+        cliente_pdf = extrair_cliente_pdf(
+            texto
         )
 
         tipo = identificar_tipo_documento(
@@ -181,6 +222,7 @@ def processar_marechal(
         cliente = localizar_cliente(
             quadra,
             lote,
+            cliente_pdf,
             tabela
         )
 
