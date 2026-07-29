@@ -4,7 +4,52 @@ import base64
 import streamlit.components.v1 as components
 import io
 import zipfile
+import streamlit as st
 
+import streamlit as st
+
+if "autenticado" not in st.session_state:
+    st.session_state["autenticado"] = False
+
+if not st.session_state["autenticado"]:
+
+    st.title("Acesso Restrito")
+
+    email = st.text_input(
+        "E-mail corporativo"
+    )
+
+    senha = st.text_input(
+        "Senha",
+        type="password"
+    )
+
+    if st.button("Entrar"):
+
+        if not email.lower().endswith(
+            "@neoservice.com.br"
+        ):
+
+            st.error(
+                "Utilize um e-mail corporativo Neo Service."
+            )
+
+        elif senha == st.secrets["APP_PASSWORD"]:
+
+            st.session_state["autenticado"] = True
+
+            st.session_state["email"] = email
+
+            st.rerun()
+
+        else:
+
+            st.error(
+                "Senha inválida."
+            )
+
+    st.stop()
+    
 from tekoa import processar_tekoa
 from d_urbanismo import processar_d_urbanismo
 from marechal import processar_marechal
