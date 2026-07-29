@@ -57,6 +57,7 @@ def extrair_unidade(texto):
 def localizar_cliente(
     quadra,
     lote,
+    cliente_pdf,
     tabela
 ):
 
@@ -78,13 +79,44 @@ def localizar_cliente(
         )
     ]
 
+    print("QUADRA PROCURADA =", quadra)
+    print("LOTE PROCURADO =", lote)
+
+    print(tabela[["Quadra", "Lote"]])
+
     if len(candidatos) == 0:
 
         return "CLIENTE NÃO ENCONTRADO"
 
-    return str(
-        candidatos.iloc[0]["Cliente"]
-    ).strip()
+    if len(candidatos) == 1:
+
+        return str(
+            candidatos.iloc[0]["Cliente"]
+        ).strip()
+
+    cliente_pdf = limpar_texto(
+        cliente_pdf or ""
+    ).upper()
+
+    for _, linha in candidatos.iterrows():
+
+        cliente_tabela = limpar_texto(
+            linha["Cliente"]
+        ).upper()
+
+        if cliente_pdf in cliente_tabela:
+
+            return limpar_texto(
+                linha["Cliente"]
+            )
+
+        if cliente_tabela in cliente_pdf:
+
+            return limpar_texto(
+                linha["Cliente"]
+            )
+
+    return "CLIENTE DUPLICADO - VALIDAR"
 
 def localizar_empreendimento(
     quadra,
@@ -146,6 +178,43 @@ def extrair_quadra_lote(texto):
 
     return quadra, lote
 
+def extrair_cliente_pdf(texto):
+
+    match = re.search(
+        r"COMPRADOR\(A\)\(ES\):\s*([A-Z\sÇÃÕÁÉÍÓÚÂÊÔ]+?)\s*,",
+        texto,
+        re.IGNORECASE
+    )
+
+    if match:
+
+        return limpar_texto(
+            match.group(1)
+        )
+
+    return None
+
+def extrair_empreendimento_pdf(texto):
+
+    empreendimentos = [
+        "RESIDENCIAL NOVA RIO GRANDE",
+        "ARES BAIRRO PARQUE PF",
+        "SCP ARES BAIRRO PARQUE",
+        "RESIDENCIAL MORADA DAS MISSOES",
+        "DON ANTONIO",
+        "RANCHO LM"
+    ]
+
+    texto = texto.upper()
+
+    for empreendimento in empreendimentos:
+
+        if empreendimento in texto:
+
+            return empreendimento
+
+    return None
+
 def limpar_texto(texto):
 
     return (
@@ -191,6 +260,28 @@ def processar_innovar(
 
         texto = extrair_texto(pdf)
 
+        empreendimento_pdf = extrair_empreendimento_pdf(
+            texto
+        )
+
+        print(
+            "EMPREENDIMENTO PDF =",
+            empreendimento_pdf
+        )
+
+        cliente_pdf = extrair_cliente_pdf(
+            texto
+        )
+
+        empreendimento_pdf = extrair_empreendimento_pdf(
+            texto
+        )
+
+        print(
+            "CLIENTE PDF =",
+            cliente_pdf
+        )
+
         print("=" * 50)
         print(texto[:5000])
         print("=" * 50)
@@ -218,6 +309,7 @@ def processar_innovar(
         cliente = localizar_cliente(
             quadra,
             lote,
+            cliente_pdf,
             tabela
         )
 
