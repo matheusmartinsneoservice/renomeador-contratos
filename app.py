@@ -1,27 +1,4 @@
 import streamlit as st
-
-if "autenticado" not in st.session_state:
-    st.session_state["autenticado"] = False
-
-if not st.session_state["autenticado"]:
-
-    senha = st.text_input(
-        "Senha de acesso",
-        type="password"
-    )
-
-    if st.button("Entrar"):
-
-        if senha == st.secrets["senha"]:
-
-            st.session_state["autenticado"] = True
-            st.rerun()
-
-        else:
-
-            st.error("Senha inválida")
-
-    st.stop()
 import pandas as pd
 import base64
 import streamlit.components.v1 as components
@@ -31,7 +8,12 @@ import zipfile
 from tekoa import processar_tekoa
 from d_urbanismo import processar_d_urbanismo
 from marechal import processar_marechal
+from gran_paradiso import processar_gran_paradiso
+from innovar import processar_innovar
+import gran_paradiso
 
+st.write("ARQUIVO CARREGADO:")
+st.write(gran_paradiso.__file__)
 # =====================================
 # CONFIGURAÇÃO
 # =====================================
@@ -49,6 +31,35 @@ if "passo" not in st.session_state:
 # =====================================
 
 RELATORIOS = {
+
+    "CRI INNOVAR": {
+
+        "empreendimentos": [
+            "ARES BAIRRO PARQUE PF",
+            "CONDOMÍNIO RANCHO LM FAZENDA RESORT",
+            "RESIDENCIAL DON ANTONIO",
+            "RESIDENCIAL MORADA DAS MISSÕES",
+            "RESIDENCIAL NOVA RIO GRANDE",
+            "SCP ARES BAIRRO PARQUE"
+        ],
+
+        "tipo": "QUADRA_LOTE",
+
+        "sharepoint":
+        "https://arquivosneoservice.sharepoint.com/:f:/g/IgDAYb7tgdQWRLtJJRyW_bqsARtgZpVMX0LrYNu1lWbokKk?e=ko4oO0"
+    },
+
+    "CRI GRAN PARADISO": {
+
+        "empreendimentos": [
+            "GP"
+        ],
+
+        "tipo": "UNIDADE_TIPO_LETRA",
+
+        "sharepoint":
+        "https://arquivosneoservice.sharepoint.com/:f:/g/IgBsFpO15Jr6TIVPunSvVQ5HASF1TiORQvJ3gArXrUjwF_k?e=WoQhGg"
+    },
 
     "CRI MARECHAL": {
 
@@ -72,7 +83,7 @@ RELATORIOS = {
         "https://arquivosneoservice.sharepoint.com/:f:/g/IgBroGJ7jWL1QYTeYv19DPwiASdF-Ek_tAnwyw5L_vqMWfs?e=Ujt3Vf"
     },
 
-    "CRI PORTAL DO CEDRO": {
+    "CRI PORTAL DO CEDROS": {
 
         "empreendimentos": [
             "PORTAL DO CEDRO",
@@ -233,6 +244,14 @@ def tela_relacao():
         colunas = [
             "Empreendimento",
             "Unidade",
+            "Cliente"
+        ]
+    elif tipo == "UNIDADE_TIPO_LETRA":
+
+        colunas = [
+            "Unidade",
+            "Tipo",
+            "Letra",
             "Cliente"
         ]
 
@@ -414,6 +433,20 @@ def tela_renomeacao():
         elif relatorio == "CRI MARECHAL":
 
             nomes = processar_marechal(
+                pdfs,
+                tabela
+            )
+
+        elif relatorio == "CRI GRAN PARADISO":
+
+            nomes = processar_gran_paradiso(
+                pdfs,
+                tabela
+            )
+
+        elif relatorio == "CRI INNOVAR":
+
+            nomes = processar_innovar(
                 pdfs,
                 tabela
             )
