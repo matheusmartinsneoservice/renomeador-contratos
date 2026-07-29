@@ -1,7 +1,7 @@
 import fitz
 import re
 import tempfile
-
+import unicodedata
 
 def extrair_texto(pdf):
 
@@ -94,6 +94,36 @@ def extrair_letra(texto):
 
     return None
 
+def extrair_cliente_pdf(texto):
+
+    # DISTRATO
+
+    match = re.search(
+        r"II\s*[-–]\s*([A-Z\sÇÃÕÁÉÍÓÚÂÊÔ]+?)\s*,\s*BRASIL",
+        texto
+    )
+
+    if match:
+
+        return limpar_texto(
+            match.group(1)
+        )
+
+    # CONTRATO
+
+    match = re.search(
+        r"COMPRADOR\(A\)\s*1:\s*NOME:\s*([A-Z\sÇÃÕÁÉÍÓÚÂÊÔ]+)",
+        texto
+    )
+
+    if match:
+
+        return limpar_texto(
+            match.group(1)
+        )
+
+    return None
+
 def limpar_texto(texto):
 
     return (
@@ -105,8 +135,51 @@ def limpar_texto(texto):
 
 def localizar_cliente(
     unidade,
+    cliente_pdf,
     tabela
 ):
+
+    candidatos = tabela[
+        tabela["Unidade"]
+        .astype(str)
+        .str.zfill(3)
+        ==
+        str(unidade).zfill(3)
+    ]
+
+    if len(candidatos) == 0:
+
+        return "CLIENTE NÃO ENCONTRADO"
+
+    if len(candidatos) == 1:
+
+        return limpar_texto(
+            candidatos.iloc[0]["Cliente"]
+        )
+
+    cliente_pdf = limpar_texto(
+        cliente_pdf or ""
+    )
+
+    for _, linha in candidatos.iterrows():
+
+        cliente_tabela = limpar_texto(
+            linha["Cliente"]
+        )
+
+        if cliente_pdf in cliente_tabela:
+
+            return limpar_texto(
+                linha["Cliente"]
+            )
+
+        if cliente_tabela in cliente_pdf:
+
+            return limpar_texto(
+                linha["Cliente"]
+            )
+
+    return "CLIENTE DUPLICADO - VALIDAR"
 
     candidatos = tabela[
         tabela["Unidade"]
@@ -124,6 +197,22 @@ def localizar_cliente(
         candidatos.iloc[0]["Cliente"]
     ).strip()
 
+def normalizar_texto(texto):
+
+    texto = str(texto)
+
+    texto = unicodedata.normalize(
+        "NFD",
+        texto
+    )
+
+    texto = "".join(
+        c
+        for c in texto
+        if unicodedata.category(c) != "Mn"
+    )
+
+    return texto.upper().strip()
 
 def formatar_tipo_nome(tipo):
 
@@ -172,8 +261,12 @@ def processar_gran_paradiso(
 
         texto = extrair_texto(pdf)
 
+        cliente_pdf = extrair_cliente_pdf(
+            texto
+        )
+
         print("=" * 50)
-        print(texto[:5000])
+        print("CLIENTE PDF =", cliente_pdf)
         print("=" * 50)
 
         unidade = extrair_unidade(texto)
@@ -202,6 +295,7 @@ def processar_gran_paradiso(
 
         cliente = localizar_cliente(
             unidade,
+            cliente_pdf,
             tabela
         )
 
