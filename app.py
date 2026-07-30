@@ -791,14 +791,17 @@ def tela_sharepoint():
         "📂 Abrir Pasta SharePoint",
         RELATORIOS[relatorio]["sharepoint"]
     )
+    
+    if st.button("🔄 Novo Processo"):
 
-    if st.button(
-        "Iniciar Novo Processo"
-    ):
+        st.session_state["passo"] = 1
 
-        st.session_state.clear()
+        st.session_state.pop("tabela", None)
+        st.session_state.pop("pdfs", None)
+        st.session_state.pop("relatorio", None)
+
         st.rerun()
-
+    
 # =====================================
 # NAVEGAÇÃO
 # =====================================
