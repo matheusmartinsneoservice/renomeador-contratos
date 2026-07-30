@@ -206,10 +206,28 @@ def extrair_unidade(pdf):
 
     return "UNIDADE NÃO ENCONTRADA"
 
+def extrair_cliente_pdf(pdf):
+
+    texto = extrair_texto(pdf)
+
+    match = re.search(
+        r"NOME\s*:\s*([A-Z\sÇÃÕÁÉÍÓÚÂÊÔ]+)",
+        texto,
+        re.IGNORECASE
+    )
+
+    if match:
+
+        return " ".join(
+            match.group(1).split()
+        )
+
+    return None
 
 def localizar_cliente(
     empreendimento,
     unidade,
+    cliente_pdf,
     tabela
 ):
 
@@ -237,16 +255,31 @@ def localizar_cliente(
 
         return "CLIENTE NÃO ENCONTRADO"
 
-    cliente = str(
-        candidatos.iloc[0]["Cliente"]
-    )
+    if len(candidatos) == 1:
 
-    cliente = " ".join(
-        cliente.split()
-    )
+        return str(
+            candidatos.iloc[0]["Cliente"]
+        ).strip()
 
-    return cliente
+    cliente_pdf = str(
+        cliente_pdf or ""
+    ).upper()
 
+    for _, linha in candidatos.iterrows():
+
+        cliente_tabela = str(
+            linha["Cliente"]
+        ).upper()
+
+        if cliente_pdf in cliente_tabela:
+
+            return linha["Cliente"]
+
+        if cliente_tabela in cliente_pdf:
+
+            return linha["Cliente"]
+
+    return "CLIENTE DUPLICADO - VALIDAR"
 
 def gerar_nome(
     empreendimento,
@@ -283,6 +316,15 @@ def processar_d_urbanismo(
             )
         )
 
+        cliente_pdf = extrair_cliente_pdf(
+            pdf
+        )
+
+        print(
+            "CLIENTE PDF =",
+            cliente_pdf
+        )
+
         unidade = extrair_unidade(
             pdf
         )
@@ -290,6 +332,7 @@ def processar_d_urbanismo(
         cliente = localizar_cliente(
             empreendimento,
             unidade,
+            cliente_pdf,
             tabela
         )
 
