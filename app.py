@@ -4,52 +4,7 @@ import base64
 import streamlit.components.v1 as components
 import io
 import zipfile
-import streamlit as st
 
-import streamlit as st
-
-if "autenticado" not in st.session_state:
-    st.session_state["autenticado"] = False
-
-if not st.session_state["autenticado"]:
-
-    st.title("Acesso Restrito")
-
-    email = st.text_input(
-        "E-mail corporativo"
-    )
-
-    senha = st.text_input(
-        "Senha",
-        type="password"
-    )
-
-    if st.button("Entrar"):
-
-        if not email.lower().endswith(
-            "@neoservice.com.br"
-        ):
-
-            st.error(
-                "Utilize um e-mail corporativo Neo Service."
-            )
-
-        elif senha == st.secrets["APP_PASSWORD"]:
-
-            st.session_state["autenticado"] = True
-
-            st.session_state["email"] = email
-
-            st.rerun()
-
-        else:
-
-            st.error(
-                "Senha inválida."
-            )
-
-    st.stop()
-    
 from tekoa import processar_tekoa
 from d_urbanismo import processar_d_urbanismo
 from marechal import processar_marechal
@@ -57,8 +12,6 @@ from gran_paradiso import processar_gran_paradiso
 from innovar import processar_innovar
 import gran_paradiso
 
-st.write("ARQUIVO CARREGADO:")
-st.write(gran_paradiso.__file__)
 # =====================================
 # CONFIGURAÇÃO
 # =====================================
@@ -274,6 +227,58 @@ def tela_relacao():
     st.info(
         f"Relatório selecionado: {relatorio}"
     )
+
+    # EXEMPLO
+
+    if relatorio == "CRI INNOVAR":
+
+        st.info(
+            """
+    Exemplo de preenchimento:
+
+    Empreendimento: RESIDENCIAL NOVA RIO GRANDE
+    Quadra: 17
+    Lote: 013
+    Cliente: MAURICIO BIAVASCHI SCHMIDT
+    """
+        )
+
+    elif relatorio == "CRI GRAN PARADISO":
+
+        st.info(
+            """
+    Exemplo de preenchimento:
+
+    Unidade: 055
+    Tipo: APTO DIAMANTE
+    Letra: G
+    Cliente: MARCELO CESAR GONÇALVES DA SILVA
+    """
+        )
+
+    elif relatorio == "CRI MARECHAL":
+
+        st.info(
+            """
+    Exemplo de preenchimento:
+
+    Quadra: 10
+    Lote: 012
+    Cliente: CLEITON DOS SANTOS BORGES DA CONCEIÇÃO
+    """
+        )
+    
+    elif relatorio == "CRI D URBANISMO":
+
+        st.info(
+            """
+    Exemplo de preenchimento:
+
+    Empreendimento: COLINAS
+    Unidade: E.4
+    Cliente: JOSE SOARES VIANA
+    """
+        )
 
     tipo = RELATORIOS[relatorio]["tipo"]
 
