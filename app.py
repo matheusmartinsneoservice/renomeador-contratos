@@ -792,15 +792,27 @@ def tela_sharepoint():
         RELATORIOS[relatorio]["sharepoint"]
     )
     
-    if st.button("🔄 Novo Processo"):
+    col1, col2 = st.columns(2)
 
-        st.session_state["passo"] = 1
+    with col1:
 
-        st.session_state.pop("tabela", None)
-        st.session_state.pop("pdfs", None)
-        st.session_state.pop("relatorio", None)
+        if st.button("🔄 Novo Processo"):
 
-        st.rerun()
+            st.session_state["passo"] = 1
+
+            st.session_state.pop("tabela", None)
+            st.session_state.pop("pdfs", None)
+            st.session_state.pop("relatorio", None)
+
+            st.rerun()
+
+    with col2:
+
+        if st.button("🚪 Sair"):
+
+            st.session_state.clear()
+
+            st.rerun()
     
 # =====================================
 # NAVEGAÇÃO
