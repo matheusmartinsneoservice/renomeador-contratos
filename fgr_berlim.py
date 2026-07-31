@@ -325,7 +325,7 @@ def processar_fgr_berlim(
             tipo = identificar_tipo_documento(
                 texto
             )
-            print("TIPO =", tipo)
+            print("TIPO FINAL =", tipo)
 
             nome = None
 
