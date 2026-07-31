@@ -243,10 +243,15 @@ def processar_fgr_berlim(
             texto = extrair_texto(
                 pdf
             )
-
+            print("=" * 50)
+            print(pdf.name)
+            print("=" * 50)
+            print(texto[:5000])
+            print("=" * 50)
             tipo = identificar_tipo_documento(
                 texto
             )
+            print("TIPO =", tipo)
 
             nome = None
 
@@ -255,6 +260,7 @@ def processar_fgr_berlim(
             # ---------------------------------
 
             if tipo == "CONTRATO":
+                print("ENTROU EM CONTRATO")
 
                 cliente = extrair_cliente_contrato(
                     texto
@@ -263,6 +269,8 @@ def processar_fgr_berlim(
                 unidade = extrair_unidade(
                     texto
                 )
+                print("CLIENTE =", cliente)
+                print("UNIDADE =", unidade)
 
                 if cliente and unidade:
 
