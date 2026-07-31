@@ -444,8 +444,8 @@ def processar_fgr_berlim(
             if not nome:
 
                 nome = (
-                    f"NAO_IDENTIFICADO - "
-                    f"{pdf.name}"
+                    f"DEBUG | "
+                    f"TIPO={tipo}"
                 )
 
             nomes.append(
