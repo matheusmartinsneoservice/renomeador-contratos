@@ -81,15 +81,6 @@ def identificar_tipo_documento(texto):
     if "CANCELAMENTOS ADMINISTRATIVOS" in texto:
         return "DISTRATO_ADMINISTRATIVO"
 
-    # CESSAO
-
-    if (
-        "CESSAO DE DIREITOS FIRMADA" in texto
-        or
-        "CESSAO DOS DIREITOS FIRMADA" in texto
-    ):
-        return "CESSAO"
-
     # CONTRATO
 
     if (
