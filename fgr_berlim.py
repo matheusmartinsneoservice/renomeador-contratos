@@ -97,7 +97,10 @@ def identificar_tipo_documento(texto):
 # =====================================================
 
 def extrair_unidade(texto):
-
+    
+    print(re.findall(r"QUADRA[: ]+(\d+)", texto))
+    print(re.findall(r"LOTE[: ]+(\d+)", texto))
+    
     texto = normalizar(texto)
 
     quadra = re.search(
