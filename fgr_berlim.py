@@ -1,8 +1,40 @@
+import fitz
 import re
+import tempfile
 import unicodedata
 
 
 PREFIXO = "CRI FGR (CJ)"
+
+
+# =====================================================
+# TEXTO
+# =====================================================
+
+def extrair_texto(pdf):
+
+    with tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".pdf"
+    ) as temp:
+
+        temp.write(
+            pdf.getvalue()
+        )
+
+        caminho_pdf = temp.name
+
+    doc = fitz.open(caminho_pdf)
+
+    texto = ""
+
+    for pagina in doc:
+
+        texto += pagina.get_text()
+
+    doc.close()
+
+    return texto.upper()
 
 
 # =====================================================
@@ -34,34 +66,10 @@ def normalizar(texto):
 
 
 # =====================================================
-# PLANILHA
+# IDENTIFICA DOCUMENTO
 # =====================================================
 
-def localizar_cliente_planilha(
-    texto,
-    df
-):
-
-    texto = normalizar(texto)
-
-    for _, row in df.iterrows():
-
-        cliente = normalizar(
-            row["Cliente"]
-        )
-
-        if cliente in texto:
-
-            return row
-
-    return None
-
-
-# =====================================================
-# TIPO
-# =====================================================
-
-def identificar_tipo(texto):
+def identificar_tipo_documento(texto):
 
     texto = normalizar(texto)
 
@@ -69,18 +77,15 @@ def identificar_tipo(texto):
         return "CESSAO"
 
     if "TERMO DE RESCISAO" in texto:
-        return "DISTRATO"
+        return "DISTRATO_FORMAL"
 
     if "CANCELAMENTOS ADMINISTRATIVOS" in texto:
-        return "DISTRATO"
+        return "DISTRATO_ADMINISTRATIVO"
 
-    if (
-        "INSTRUMENTO PARTICULAR DE CONTRATO"
-        in texto
-    ):
+    if "INSTRUMENTO PARTICULAR DE CONTRATO" in texto:
         return "CONTRATO"
 
-    return None
+    return "DESCONHECIDO"
 
 
 # =====================================================
@@ -104,27 +109,23 @@ def extrair_unidade(texto):
     if not quadra or not lote:
         return None
 
-    quadra = int(
-        quadra.group(1)
+    return (
+        f"{int(quadra.group(1)):02d}"
+        f"-"
+        f"{int(lote.group(1)):02d}"
     )
-
-    lote = int(
-        lote.group(1)
-    )
-
-    return f"{quadra:02d}-{lote:02d}"
 
 
 # =====================================================
-# CONTRATO
+# CLIENTE CONTRATO
 # =====================================================
 
-def cliente_contrato(texto):
+def extrair_cliente_contrato(texto):
 
     texto = normalizar(texto)
 
     match = re.search(
-        r"COMPRADOR\(A,ES\).*?([A-Z ]+?), BRASILEIRO",
+        r"COMO OUTORGADO\(A,S\).*?,\s*([A-Z ]+?),\s*BRASILEIRO",
         texto,
         re.S
     )
@@ -137,30 +138,31 @@ def cliente_contrato(texto):
 
 
 # =====================================================
-# CESSAO
+# CLIENTE CESSÃO
 # =====================================================
 
-def cliente_cessao(texto):
+def extrair_cliente_cessao(texto):
 
     texto = normalizar(texto)
 
-    partes = re.findall(
-        r"([A-Z ]+?), BRASILEIRO\(A\)",
-        texto
+    match = re.search(
+        r"CESSIONARIO.*?([A-Z ]+?),\s*BRASILEIRO",
+        texto,
+        re.S
     )
 
-    if len(partes) >= 2:
+    if match:
 
-        return partes[1].strip()
+        return match.group(1).strip()
 
     return None
 
 
 # =====================================================
-# DISTRATO FORMAL
+# CLIENTE DISTRATO FORMAL
 # =====================================================
 
-def cliente_distrato(texto):
+def extrair_cliente_distrato(texto):
 
     texto = normalizar(texto)
 
@@ -178,14 +180,42 @@ def cliente_distrato(texto):
 
 
 # =====================================================
-# MONTA NOME
+# LOCALIZA CLIENTE NA PLANILHA
 # =====================================================
 
-def montar_nome(
+def localizar_cliente_planilha(
+    texto,
+    tabela
+):
+
+    texto = normalizar(texto)
+
+    for _, linha in tabela.iterrows():
+
+        cliente = normalizar(
+            linha["Cliente"]
+        )
+
+        if cliente in texto:
+
+            return linha
+
+    return None
+
+
+# =====================================================
+# GERA NOME
+# =====================================================
+
+def gerar_nome(
     unidade,
     cliente,
     tipo
 ):
+
+    cliente = str(cliente).strip()
+
+    unidade = str(unidade).strip()
 
     return (
         f"{PREFIXO} - "
@@ -196,123 +226,135 @@ def montar_nome(
 
 
 # =====================================================
-# FUNÇÃO PRINCIPAL
+# PROCESSAMENTO PRINCIPAL
 # =====================================================
 
 def processar_fgr_berlim(
-    texto,
-    df_unidades
+    pdfs,
+    tabela
 ):
 
-    texto_norm = normalizar(
-        texto
-    )
+    nomes = []
 
-    tipo_doc = identificar_tipo(
-        texto_norm
-    )
+    for pdf in pdfs:
 
-    if not tipo_doc:
-        return None
+        try:
 
+            texto = extrair_texto(
+                pdf
+            )
 
-    # ---------------------------------
-    # CONTRATO
-    # ---------------------------------
+            tipo = identificar_tipo_documento(
+                texto
+            )
 
-    if tipo_doc == "CONTRATO":
+            nome = None
 
-        cliente = cliente_contrato(
-            texto
-        )
+            # ---------------------------------
+            # CONTRATO
+            # ---------------------------------
 
-        unidade = extrair_unidade(
-            texto
-        )
+            if tipo == "CONTRATO":
 
-        if not cliente or not unidade:
-            return None
+                cliente = extrair_cliente_contrato(
+                    texto
+                )
 
-        return montar_nome(
-            unidade,
-            cliente,
-            "CONTRATO DE COMPRA E VENDA"
-        )
+                unidade = extrair_unidade(
+                    texto
+                )
 
+                if cliente and unidade:
 
-    # ---------------------------------
-    # CESSAO
-    # ---------------------------------
+                    nome = gerar_nome(
+                        unidade,
+                        cliente,
+                        "CONTRATO DE COMPRA E VENDA"
+                    )
 
-    if tipo_doc == "CESSAO":
+            # ---------------------------------
+            # CESSÃO
+            # ---------------------------------
 
-        cliente = cliente_cessao(
-            texto
-        )
+            elif tipo == "CESSAO":
 
-        unidade = extrair_unidade(
-            texto
-        )
+                cliente = extrair_cliente_cessao(
+                    texto
+                )
 
-        if not cliente or not unidade:
-            return None
+                unidade = extrair_unidade(
+                    texto
+                )
 
-        return montar_nome(
-            unidade,
-            cliente,
-            "CESSAO DE DIREITOS"
-        )
+                if cliente and unidade:
 
+                    nome = gerar_nome(
+                        unidade,
+                        cliente,
+                        "CESSAO DE DIREITOS"
+                    )
 
-    # ---------------------------------
-    # DISTRATO FORMAL
-    # ---------------------------------
+            # ---------------------------------
+            # DISTRATO FORMAL
+            # ---------------------------------
 
-    if (
-        "TERMO DE RESCISAO"
-        in texto_norm
-    ):
+            elif tipo == "DISTRATO_FORMAL":
 
-        cliente = cliente_distrato(
-            texto
-        )
+                cliente = extrair_cliente_distrato(
+                    texto
+                )
 
-        unidade = extrair_unidade(
-            texto
-        )
+                unidade = extrair_unidade(
+                    texto
+                )
 
-        if not cliente or not unidade:
-            return None
+                if cliente and unidade:
 
-        return montar_nome(
-            unidade,
-            cliente,
-            "DISTRATO"
-        )
+                    nome = gerar_nome(
+                        unidade,
+                        cliente,
+                        "DISTRATO"
+                    )
 
+            # ---------------------------------
+            # DISTRATO ADMINISTRATIVO
+            # ---------------------------------
 
-    # ---------------------------------
-    # DISTRATO ADMINISTRATIVO
-    # ---------------------------------
+            elif tipo == "DISTRATO_ADMINISTRATIVO":
 
-    linha = localizar_cliente_planilha(
-        texto,
-        df_unidades
-    )
+                linha = localizar_cliente_planilha(
+                    texto,
+                    tabela
+                )
 
-    if linha is None:
-        return None
+                if linha is not None:
 
-    cliente = linha[
-        "Cliente"
-    ]
+                    nome = gerar_nome(
+                        linha["Unidade"],
+                        linha["Cliente"],
+                        "DISTRATO"
+                    )
 
-    unidade = linha[
-        "Unidade"
-    ]
+            if not nome:
 
-    return montar_nome(
-        unidade,
-        cliente,
-        "DISTRATO"
-    )
+                nome = (
+                    f"NAO_IDENTIFICADO - "
+                    f"{pdf.name}"
+                )
+
+            nomes.append(
+                nome
+            )
+
+        except Exception as erro:
+
+            nomes.append(
+                f"ERRO - {pdf.name}"
+            )
+
+            print(
+                f"Erro ao processar {pdf.name}:",
+                erro
+            )
+
+    return nomes
