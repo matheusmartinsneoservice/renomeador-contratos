@@ -125,7 +125,7 @@ def extrair_cliente_contrato(texto):
     texto = normalizar(texto)
 
     match = re.search(
-        r"COMO OUTORGADO\(A,S\).*?,\s*([A-Z ]+?),\s*BRASILEIRO",
+        r"COMPRADOR\(A,ES\).*?FIDUCIANTE\(S\),\s*([A-Z ]+?)\s*,\s*BRASILEIRO",
         texto,
         re.S
     )
@@ -135,7 +135,6 @@ def extrair_cliente_contrato(texto):
         return match.group(1).strip()
 
     return None
-
 
 # =====================================================
 # CLIENTE CESSÃO
