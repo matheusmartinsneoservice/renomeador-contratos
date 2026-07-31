@@ -97,28 +97,35 @@ def identificar_tipo_documento(texto):
 # =====================================================
 
 def extrair_unidade(texto):
-    
-    print(re.findall(r"QUADRA[: ]+(\d+)", texto))
-    print(re.findall(r"LOTE[: ]+(\d+)", texto))
-    
+
     texto = normalizar(texto)
+
+    bloco = re.search(
+        r"DO IMOVEL OBJETO DO PRESENTE INSTRUMENTO(.*?)RUA",
+        texto,
+        re.S
+    )
+
+    if not bloco:
+        return None
+
+    trecho = bloco.group(1)
 
     quadra = re.search(
         r"QUADRA[: ]+(\d+)",
-        texto
+        trecho
     )
 
     lote = re.search(
         r"LOTE[: ]+(\d+)",
-        texto
+        trecho
     )
 
     if not quadra or not lote:
         return None
 
     return (
-        f"{int(quadra.group(1)):02d}"
-        f"-"
+        f"{int(quadra.group(1)):02d}-"
         f"{int(lote.group(1)):02d}"
     )
 
