@@ -52,6 +52,7 @@ from d_urbanismo import processar_d_urbanismo
 from marechal import processar_marechal
 from gran_paradiso import processar_gran_paradiso
 from innovar import processar_innovar
+from fgr_berlim import processar_fgr_berlim
 import gran_paradiso
 
 # =====================================
@@ -71,7 +72,19 @@ if "passo" not in st.session_state:
 # =====================================
 
 RELATORIOS = {
+    "CRI FGR BERLIM": {
 
+        "empreendimentos": [
+            "JARDINS BERLIM"
+        ],
+
+        "tipo": "UNIDADE",
+
+        "sharepoint":
+        "https://arquivosneoservice.sharepoint.com/:f:/g/IgB3mlBT2Ga-S5b2vQ5x9fVKAX8ZnNPVcYWJQw4Q5d2cKE4?e=FmjjcG"
+
+    },
+    
     "CRI INNOVAR": {
 
         "empreendimentos": [
@@ -321,7 +334,18 @@ def tela_relacao():
     Cliente: JOSE SOARES VIANA
     """
         )
+        
+    elif relatorio == "CRI FGR BERLIM":
 
+        st.info(
+                """
+    Exemplo de preenchimento:
+
+    Unidade: 01-06
+    Cliente: BARBARA ALENCAR COELHO
+    """
+        )
+            
     tipo = RELATORIOS[relatorio]["tipo"]
 
     if tipo == "UNIDADE":
@@ -539,6 +563,13 @@ def tela_renomeacao():
         elif relatorio == "CRI INNOVAR":
 
             nomes = processar_innovar(
+                pdfs,
+                tabela
+            )
+            
+        elif relatorio == "CRI FGR BERLIM":
+
+            nomes = processar_fgr_berlim(
                 pdfs,
                 tabela
             )
