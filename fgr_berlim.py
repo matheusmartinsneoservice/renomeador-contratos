@@ -73,8 +73,7 @@ def identificar_tipo_documento(texto):
 
     texto = normalizar(texto)
 
-    if "CESSAO DE DIREITOS" in texto:
-        return "CESSAO"
+    # DISTRATOS
 
     if "TERMO DE RESCISAO" in texto:
         return "DISTRATO_FORMAL"
@@ -82,11 +81,25 @@ def identificar_tipo_documento(texto):
     if "CANCELAMENTOS ADMINISTRATIVOS" in texto:
         return "DISTRATO_ADMINISTRATIVO"
 
-    if "INSTRUMENTO PARTICULAR DE CONTRATO" in texto:
+    # CESSAO
+
+    if (
+        "CESSAO DE DIREITOS" in texto
+        or
+        "CESSAO DOS DIREITOS" in texto
+    ):
+        return "CESSAO"
+
+    # CONTRATO
+
+    if (
+        "CONTRATO DE COMPRA E VENDA DE IMOVEL" in texto
+        or
+        "INSTRUMENTO PARTICULAR DE CONTRATO" in texto
+    ):
         return "CONTRATO"
 
     return "DESCONHECIDO"
-
 
 # =====================================================
 # UNIDADE
