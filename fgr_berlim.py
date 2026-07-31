@@ -83,6 +83,8 @@ def identificar_tipo_documento(texto):
         "CESSAO DE DIREITOS" in texto
         or
         "CESSIONARIO" in texto
+        or
+        "CEDENTE" in texto
     ):
         return "CESSAO"
 
