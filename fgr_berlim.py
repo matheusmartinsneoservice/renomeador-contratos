@@ -446,6 +446,8 @@ def processar_fgr_berlim(
                 nome = (
                     f"DEBUG | "
                     f"TIPO={tipo}"
+                    f"UNID={unidade} | "
+                    f"CLIENTE={cliente}"
                 )
 
             nomes.append(
