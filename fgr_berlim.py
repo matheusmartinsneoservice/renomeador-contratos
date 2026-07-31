@@ -73,15 +73,18 @@ def identificar_tipo_documento(texto):
 
     texto = normalizar(texto)
 
-    # DISTRATOS
-
     if "TERMO DE RESCISAO" in texto:
         return "DISTRATO_FORMAL"
 
     if "CANCELAMENTOS ADMINISTRATIVOS" in texto:
         return "DISTRATO_ADMINISTRATIVO"
 
-    # CONTRATO
+    if (
+        "CESSAO DE DIREITOS" in texto
+        or
+        "CESSIONARIO" in texto
+    ):
+        return "CESSAO"
 
     if (
         "CONTRATO DE COMPRA E VENDA DE IMOVEL" in texto
@@ -91,7 +94,7 @@ def identificar_tipo_documento(texto):
         return "CONTRATO"
 
     return "DESCONHECIDO"
-
+    
 # =====================================================
 # UNIDADE
 # =====================================================
@@ -100,35 +103,53 @@ def extrair_unidade(texto):
 
     texto = normalizar(texto)
 
+    # BLOCO DO IMOVEL
+
     bloco = re.search(
         r"DO IMOVEL OBJETO DO PRESENTE INSTRUMENTO(.*?)RUA",
         texto,
         re.S
     )
 
-    if not bloco:
-        return None
+    if bloco:
 
-    trecho = bloco.group(1)
+        trecho = bloco.group(1)
 
-    quadra = re.search(
-        r"QUADRA[: ]+(\d+)",
-        trecho
+        quadra = re.search(
+            r"QUADRA[: ]+(\d+)",
+            trecho
+        )
+
+        lote = re.search(
+            r"LOTE[: ]+(\d+)",
+            trecho
+        )
+
+        if quadra and lote:
+
+            return (
+                f"{int(quadra.group(1)):02d}-"
+                f"{int(lote.group(1)):02d}"
+            )
+
+    # FALLBACK
+
+    ocorrencias = re.findall(
+        r"QUADRA[: ]+(\d+).*?LOTE[: ]+(\d+)",
+        texto,
+        re.S
     )
 
-    lote = re.search(
-        r"LOTE[: ]+(\d+)",
-        trecho
-    )
+    if ocorrencias:
 
-    if not quadra or not lote:
-        return None
+        q, l = ocorrencias[-1]
 
-    return (
-        f"{int(quadra.group(1)):02d}-"
-        f"{int(lote.group(1)):02d}"
-    )
+        return (
+            f"{int(q):02d}-"
+            f"{int(l):02d}"
+        )
 
+    return None
 
 # =====================================================
 # CLIENTE CONTRATO
