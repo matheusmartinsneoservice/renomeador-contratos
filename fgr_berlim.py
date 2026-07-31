@@ -208,11 +208,15 @@ def localizar_cliente_por_unidade(
 ):
 
     candidatos = tabela[
-        tabela["Unidade"]
-        .astype(str)
-        .str.strip()
+        tabela["Unidade"] \
+        .astype(str) \
+        .str.replace(" ", "") \
+        .str.upper()
         ==
         str(unidade)
+        .strip()
+        .upper()
+]
     ]
 
     if len(candidatos) == 0:
