@@ -84,9 +84,9 @@ def identificar_tipo_documento(texto):
     # CESSAO
 
     if (
-        "CESSAO DE DIREITOS" in texto
+        "CESSAO DE DIREITOS FIRMADA" in texto
         or
-        "CESSAO DOS DIREITOS" in texto
+        "CESSAO DOS DIREITOS FIRMADA" in texto
     ):
         return "CESSAO"
 
