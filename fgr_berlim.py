@@ -201,7 +201,75 @@ def localizar_cliente_planilha(
 
     return None
 
+def localizar_cliente_por_unidade(
+    unidade,
+    cliente_pdf,
+    tabela
+):
 
+    candidatos = tabela[
+        tabela["Unidade"]
+        .astype(str)
+        .str.strip()
+        ==
+        str(unidade)
+    ]
+
+    if len(candidatos) == 0:
+
+        return None
+
+    if len(candidatos) == 1:
+
+        return str(
+            candidatos.iloc[0]["Cliente"]
+        ).strip()
+
+    cliente_pdf = normalizar(
+        cliente_pdf or ""
+    )
+
+    for _, linha in candidatos.iterrows():
+
+        cliente_tabela = normalizar(
+            linha["Cliente"]
+        )
+
+        if cliente_tabela in cliente_pdf:
+
+            return str(
+                linha["Cliente"]
+            ).strip()
+
+        if cliente_pdf in cliente_tabela:
+
+            return str(
+                linha["Cliente"]
+            ).strip()
+
+    return "CLIENTE DUPLICADO - VALIDAR"
+    
+def localizar_cliente_no_texto(
+    texto,
+    tabela
+):
+
+    texto = normalizar(texto)
+
+    for _, linha in tabela.iterrows():
+
+        cliente = normalizar(
+            linha["Cliente"]
+        )
+
+        if cliente in texto:
+
+            return str(
+                linha["Cliente"]
+            ).strip()
+
+    return None
+`
 # =====================================================
 # GERA NOME
 # =====================================================
@@ -261,15 +329,19 @@ def processar_fgr_berlim(
             if tipo == "CONTRATO":
                 print("ENTROU EM CONTRATO")
 
-                cliente = extrair_cliente_contrato(
-                    texto
-                )
-
                 unidade = extrair_unidade(
                     texto
                 )
-                print("CLIENTE =", cliente)
-                print("UNIDADE =", unidade)
+
+                cliente_pdf = extrair_cliente_contrato(
+                    texto
+                )
+
+                cliente = localizar_cliente_por_unidade(
+                    unidade,
+                    cliente_pdf,
+                    tabela
+                )
 
                 if cliente and unidade:
 
@@ -285,12 +357,18 @@ def processar_fgr_berlim(
 
             elif tipo == "CESSAO":
 
-                cliente = extrair_cliente_cessao(
+                unidade = extrair_unidade(
                     texto
                 )
 
-                unidade = extrair_unidade(
+                cliente_pdf = extrair_cliente_cessao(
                     texto
+                )
+
+                cliente = localizar_cliente_por_unidade(
+                    unidade,
+                    cliente_pdf,
+                    tabela
                 )
 
                 if cliente and unidade:
@@ -307,12 +385,18 @@ def processar_fgr_berlim(
 
             elif tipo == "DISTRATO_FORMAL":
 
-                cliente = extrair_cliente_distrato(
+                unidade = extrair_unidade(
                     texto
                 )
 
-                unidade = extrair_unidade(
+                cliente_pdf = extrair_cliente_distrato(
                     texto
+                )
+
+                cliente = localizar_cliente_por_unidade(
+                    unidade,
+                    cliente_pdf,
+                    tabela
                 )
 
                 if cliente and unidade:
@@ -329,16 +413,24 @@ def processar_fgr_berlim(
 
             elif tipo == "DISTRATO_ADMINISTRATIVO":
 
-                linha = localizar_cliente_planilha(
+                cliente = localizar_cliente_no_texto(
                     texto,
                     tabela
                 )
 
-                if linha is not None:
+                if cliente:
+
+                    linha = tabela[
+                        tabela["Cliente"]
+                        .astype(str)
+                        .str.strip()
+                        ==
+                        cliente
+                    ].iloc[0]
 
                     nome = gerar_nome(
                         linha["Unidade"],
-                        linha["Cliente"],
+                        cliente,
                         "DISTRATO"
                     )
 
