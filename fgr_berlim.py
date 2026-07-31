@@ -73,25 +73,26 @@ def identificar_tipo_documento(texto):
 
     texto = normalizar(texto)
 
-    if "TERMO DE RESCISAO" in texto:
+    cabecalho = texto[:4000]
+
+    if "TERMO DE RESCISAO" in cabecalho:
         return "DISTRATO_FORMAL"
 
-    if "CANCELAMENTOS ADMINISTRATIVOS" in texto:
+    if "CANCELAMENTOS ADMINISTRATIVOS" in cabecalho:
         return "DISTRATO_ADMINISTRATIVO"
 
     if (
-        "CESSAO DE DIREITOS" in texto
-        or
-        "CESSIONARIO" in texto
-        or
-        "CEDENTE" in texto
+        "CESSAO DE DIREITOS FIRMADA ENTRE"
+        in cabecalho
     ):
         return "CESSAO"
 
     if (
-        "CONTRATO DE COMPRA E VENDA DE IMOVEL" in texto
+        "INSTRUMENTO PARTICULAR DE CONTRATO"
+        in cabecalho
         or
-        "INSTRUMENTO PARTICULAR DE CONTRATO" in texto
+        "CONTRATO DE COMPRA E VENDA"
+        in cabecalho
     ):
         return "CONTRATO"
 
