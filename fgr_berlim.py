@@ -216,7 +216,6 @@ def localizar_cliente_por_unidade(
         str(unidade)
         .strip()
         .upper()
-]
     ]
 
     if len(candidatos) == 0:
