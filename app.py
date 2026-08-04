@@ -75,13 +75,14 @@ if "passo" not in st.session_state:
 RELATORIOS = {
         "CRI BRDU | 4ª EMISSÃO": {
 
-        "empreendimentos": [],
+        "empreendimentos": [
             "IMPERATRIZ 03",
             "IMPERATRIZ 04",
             "RIO VERMELHO",
             "SPE LUZIÂNIA",
             "SPE ORLANDO",
             "SPE ZURIQUE"
+        ],
             
         "tipo": "QUADRA_LOTE",
 
