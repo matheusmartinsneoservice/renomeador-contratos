@@ -53,6 +53,7 @@ from marechal import processar_marechal
 from gran_paradiso import processar_gran_paradiso
 from innovar import processar_innovar
 from fgr_berlim import processar_fgr_berlim
+from cri_brdu import processar_cri_brdu
 import gran_paradiso
 
 # =====================================
@@ -72,6 +73,22 @@ if "passo" not in st.session_state:
 # =====================================
 
 RELATORIOS = {
+        "CRI BRDU | 4ª EMISSÃO": {
+
+        "empreendimentos": [],
+            "IMPERATRIZ 03",
+            "IMPERATRIZ 04",
+            "RIO VERMELHO",
+            "SPE LUZIÂNIA",
+            "SPE ORLANDO",
+            "SPE ZURIQUE"
+            
+        "tipo": "QUADRA_LOTE",
+
+        "sharepoint":
+        "https://arquivosneoservice.sharepoint.com/:f:/g/IgAv9VZfe5pZQq6kH08BOpc7Abs-MrBN6L8jtK-028bm6WU?e=6Rer7I"
+    },
+    
     "CRI FGR BERLIM": {
 
         "empreendimentos": [
@@ -573,7 +590,15 @@ def tela_renomeacao():
                 pdfs,
                 tabela
             )
+            
+        elif empreendimento == "CRI BRDU":
 
+            arquivos_renomeados, ignorados = (
+                processar_cri_brdu(
+                arquivos_pdf
+       
+            )
+                
         for pdf, nome in zip(
             pdfs,
             nomes
