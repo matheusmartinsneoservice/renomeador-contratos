@@ -58,7 +58,6 @@ def extrair_texto(pdf):
 
     return texto
 
-
 # ======================================================
 # EMPREENDIMENTO
 # ======================================================
@@ -184,11 +183,9 @@ def buscar_cliente(
     ):
         return None
 
-   if quadra is None or lote is None:
-    return None
-
     quadra = str(quadra).strip()
     lote = str(lote).strip()
+
     unidade = f"Lote{quadra}.{lote}"
 
     filtro = tabela[
@@ -210,15 +207,14 @@ def buscar_cliente(
             unidade.upper()
         )
     ]
+
     print("RESULTADOS:", len(filtro))
+
     if len(filtro) > 0:
 
-        return (
-            filtro.iloc[0]["Cliente"]
-        )
+        return filtro.iloc[0]["Cliente"]
 
     return None
-
 
 # ======================================================
 # NOME FINAL
