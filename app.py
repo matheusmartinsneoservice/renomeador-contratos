@@ -5,6 +5,17 @@ import streamlit.components.v1 as components
 import io
 import zipfile
 
+def limpar_texto(texto):
+
+    return (
+        str(texto)
+        .replace("\xa0", " ")
+        .replace("\t", " ")
+        .replace("\n", " ")
+        .replace("\r", " ")
+        .strip()
+    )
+    
 if "autenticado" not in st.session_state:
     st.session_state["autenticado"] = False
 
@@ -528,10 +539,13 @@ def tela_renomeacao():
         tabela[coluna] = (
             tabela[coluna]
             .astype(str)
+            .str.replace("\xa0", " ", regex=False)
+            .str.replace("\t", " ", regex=False)
             .str.replace("\\n", " ", regex=False)
             .str.replace("\\r", " ", regex=False)
             .str.replace("\n", " ", regex=False)
             .str.replace("\r", " ", regex=False)
+            .str.replace(r"\s+", " ", regex=True)
             .str.strip()
         )
 
