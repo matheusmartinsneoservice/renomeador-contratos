@@ -170,7 +170,7 @@ def buscar_cliente(
 
     quadra = str(quadra).strip()
 
-    lote = str(int(lote))
+    lote = str(lote).strip()
 
     unidade = f"Lote{quadra}.{lote}"
 
