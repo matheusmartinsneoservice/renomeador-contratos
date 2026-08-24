@@ -849,6 +849,10 @@ def tela_assinaturas():
             mime="application/pdf"
         )
         
+        st.write(
+            f"Arquivo será salvo como: {nome_renomeado}"
+        )    
+        
     ignorados = st.session_state.get(
         "arquivos_ignorados",
         []
@@ -880,9 +884,7 @@ def tela_assinaturas():
             mime="application/zip"
         )
     
-        st.write(
-            f"Arquivo será salvo como: {nome_renomeado}"
-        )
+
 
     else:
 
