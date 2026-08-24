@@ -300,12 +300,12 @@ def processar_portal_cedros(
                 )
 
                 continue
-            nome = gerar_nome(
-                empreendimento,
-                quadra,
-                lote,
-                cliente,
-                tipo
+            nome = (
+                f"TESTE | "
+                f"EMP={empreendimento} | "
+                f"Q={quadra} | "
+                f"L={lote} | "
+                f"CLI={cliente}"
             )
 
             nomes.append(nome)
