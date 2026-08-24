@@ -59,6 +59,7 @@ def extrair_texto(pdf):
         print("=" * 50)
         print("PAGINA:", numero + 1)
         print("CARACTERES:", len(texto_pagina))
+        print(texto_pagina[:200])
 
         texto += texto_pagina
 
