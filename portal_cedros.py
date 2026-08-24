@@ -304,4 +304,4 @@ def processar_portal_cedros(
     for erro in erros:
         print(erro)
         
-    return nomes
+    return nomes, erros
