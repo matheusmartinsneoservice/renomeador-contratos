@@ -107,7 +107,7 @@ def identificar_tipo(texto):
 
 def extrair_unidade(texto):
 
-    texto = normalizar(texto)
+    texto_inicio = normalizar(texto[:4000])
 
     # ==================================
     # DISTRATO
