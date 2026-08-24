@@ -168,6 +168,10 @@ def buscar_cliente(
     lote
 ):
 
+    quadra = str(quadra).strip()
+
+    lote = str(int(lote))
+
     unidade = f"Lote{quadra}.{lote}"
 
     filtro = tabela[
