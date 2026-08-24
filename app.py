@@ -845,10 +845,10 @@ def tela_assinaturas():
             mime="application/pdf"
         )
         
-ignorados = st.session_state.get(
-    "arquivos_ignorados",
-    []
-)
+    ignorados = st.session_state.get(
+        "arquivos_ignorados",
+        []
+    )
 
     if ignorados:
 
