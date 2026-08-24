@@ -162,7 +162,7 @@ RELATORIOS = {
             "JARDINS DE MARANGUAPE"
         ],
 
-        "tipo": "QUADRA_LOTE",
+        "tipo": "EMPREENDIMENTO_UNIDADE",
 
         "sharepoint":
         "https://arquivosneoservice.sharepoint.com/:f:/g/IgCtpPPLtT1mTrMLJriQ0TtmAdyBTSpahqeKDFVtRtDTrUg?e=zaw7mG"
@@ -370,12 +370,11 @@ def tela_relacao():
             """
     Exemplo de preenchimento:
 
-    Empreendimento: PORTAL DO CEDRO
-    Quadra: G
-    Lote: 31
-    Cliente: FRANCISCO EDBERTO DOS SANTOS
+    Empreendimento: Portal do Cedro
+    Unidade: LoteG.31
+    Cliente: Francisco Edberto dos Santos
     """
-        )  
+        ) 
         
     tipo = RELATORIOS[relatorio]["tipo"]
 
