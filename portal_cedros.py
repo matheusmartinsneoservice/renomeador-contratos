@@ -238,6 +238,8 @@ def processar_portal_cedros(
 
     erros = []
 
+    arquivos_ignorados = []
+    
     for pdf in pdfs:
 
         try:
@@ -277,7 +279,12 @@ def processar_portal_cedros(
                 erros.append(
                     f"{pdf.name} - dados não encontrados"
                 )
-
+                arquivos_ignorados.append(
+                    {
+                        "nome": pdf.name,
+                        "pdf_bytes": pdf.getvalue()
+                    }
+                )
                 continue
 
             nome = gerar_nome(
@@ -295,7 +302,14 @@ def processar_portal_cedros(
             erros.append(
                 f"{pdf.name} - {erro}"
             )
-        
+
+            arquivos_ignorados.append(
+                {
+                    "nome": pdf.name,
+                    "pdf_bytes": pdf.getvalue()
+                }
+            )
+
     print("================================")
     print("TOTAL PDFs:", len(pdfs))
     print("RENOMEADOS:", len(nomes))
