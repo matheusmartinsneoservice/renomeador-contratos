@@ -65,7 +65,7 @@ def extrair_texto(pdf):
 
 def identificar_empreendimento(texto):
 
-    texto = normalizar(texto)
+    texto_inicio = normalizar(texto[:4000])
 
     if "JARDINS DE MARANGUAPE" in texto:
 
@@ -135,14 +135,14 @@ def extrair_unidade(texto):
     # ==================================
 
     match_quadra = re.search(
-        r"QUADRA\s*:?\s*([A-Z])",
-        texto,
+        r"QUADRA:\s*([A-Z])",
+        texto_inicio,
         re.I
     )
 
     match_lote = re.search(
-        r"LOTE\(S\)\s*:?\s*(\d+)",
-        texto,
+        r"LOTE\(S\):\s*(\d+)",
+        texto_inicio,
         re.I
     )
 
