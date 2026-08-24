@@ -284,16 +284,21 @@ def processar_portal_cedros(
             ):
 
                 erros.append(
-                    f"{pdf.name} - dados não encontrados"
+                    f"{pdf.name} - "
+                    f"EMP={empreendimento} | "
+                    f"Q={quadra} | "
+                    f"L={lote} | "
+                    f"CLI={cliente}"
                 )
+
                 arquivos_ignorados.append(
                     {
                         "nome": pdf.name,
                         "pdf_bytes": pdf.getvalue()
                     }
                 )
-                continue
 
+                continue
             nome = gerar_nome(
                 empreendimento,
                 quadra,
