@@ -1,5 +1,9 @@
 import fitz
 import re
+import io
+
+import pytesseract
+from PIL import Image
 
 
 # ======================================================
@@ -7,6 +11,9 @@ import re
 # ======================================================
 
 def normalizar(texto):
+
+    if texto is None:
+        return ""
 
     texto = texto.upper()
 
@@ -52,20 +59,59 @@ def extrair_texto(pdf):
 
     texto = ""
 
+    # =====================================
+    # LEITURA NORMAL DE TODAS AS PAGINAS
+    # =====================================
+
     for numero, pagina in enumerate(documento):
 
-        texto_pagina = pagina.get_text()
+        texto_pagina = pagina.get_text("text")
 
         print("=" * 50)
         print("PAGINA:", numero + 1)
         print("CARACTERES:", len(texto_pagina))
-        print(texto_pagina[:200])
 
         texto += texto_pagina
+        texto += "\n"
+
+    # =====================================
+    # OCR AUTOMÁTICO
+    # =====================================
+
+    if len(texto.strip()) < 500:
+
+        print("=" * 50)
+        print("PDF COM POUCO TEXTO")
+        print("INICIANDO OCR")
+
+        texto = ""
+
+        for numero, pagina in enumerate(documento):
+
+            pix = pagina.get_pixmap(
+                matrix=fitz.Matrix(2, 2)
+            )
+
+            imagem = Image.open(
+                io.BytesIO(
+                    pix.tobytes("png")
+                )
+            )
+
+            texto_pagina = pytesseract.image_to_string(
+                imagem,
+                lang="por"
+            )
+
+            texto += texto_pagina
+            texto += "\n"
 
     documento.close()
 
+    print("TOTAL CARACTERES:", len(texto))
+
     return texto
+
 
 # ======================================================
 # EMPREENDIMENTO
@@ -75,25 +121,36 @@ def identificar_empreendimento(texto):
 
     texto = normalizar(texto)
 
-    if "JARDINS DE MARANGUAPE" in texto:
+    empreendimentos = {
 
-        return "Jardins de Maranguape"
+        "JARDINS DE MARANGUAPE":
+            "Jardins de Maranguape",
 
-    if (
-        "PORTAL DO CEDRO" in texto
-        or
-        "PORTAL DA CEDRO" in texto
-        or
-        "PORTAL CEDRO" in texto
-    ):
+        "PORTAL DOS CEDROS":
+            "Portal do Cedro",
 
-        return "Portal do Cedro"
-        
-    print("================================")
+        "PORTAL DO CEDRO":
+            "Portal do Cedro",
+
+        "PORTAL DA CEDRO":
+            "Portal do Cedro",
+
+        "PORTAL CEDRO":
+            "Portal do Cedro",
+    }
+
+    for chave, valor in empreendimentos.items():
+
+        if chave in texto:
+
+            return valor
+
+    print("=" * 50)
     print("NAO IDENTIFICOU EMPREENDIMENTO")
-    print(texto[:3000])
+    print(texto[:5000])
 
     return None
+
 
 # ======================================================
 # TIPO
@@ -122,60 +179,63 @@ def extrair_unidade(texto):
 
     texto = normalizar(texto)
 
-    # ==================================
-    # DISTRATO
-    # lote n. 55 – quadra B
-    # ==================================
+    padroes = [
 
-    match = re.search(
+        # DISTRATO
         r"LOTE\s*N\.?\s*(\d+)\s*[–\-]\s*QUADRA\s*([A-Z])",
-        texto,
-        re.I
-    )
 
-    if match:
+        # CONTRATOS
+        r"QUADRA:\s*([A-Z]).{0,300}?LOTE\(S\):\s*(\d+)",
 
-        lote = match.group(1)
+        r"QUADRA\s*([A-Z]).{0,300}?LOTE\s*(\d+)",
 
-        quadra = match.group(2)
+        r"LOTE\s*(\d+).{0,300}?QUADRA\s*([A-Z])",
+
+        r"UNIDADE\s*([A-Z])\.?(\d+)",
+
+        r"LOTE([A-Z])\.?(\d+)"
+    ]
+
+    for padrao in padroes:
+
+        match = re.search(
+            padrao,
+            texto,
+            re.I | re.S
+        )
+
+        if not match:
+            continue
+
+        grupo1 = match.group(1)
+        grupo2 = match.group(2)
+
+        if grupo1.isdigit():
+
+            lote = grupo1
+            quadra = grupo2
+
+        else:
+
+            quadra = grupo1
+            lote = grupo2
+
+        print(
+            f"QUADRA={quadra} "
+            f"LOTE={lote}"
+        )
 
         return quadra, lote
 
-    # ==================================
-    # CONTRATO
-    # Quadra: G
-    # Lote(s): 31
-    # ==================================
-
-    match_quadra = re.search(
-        r"QUADRA:\s*([A-Z])",
-        texto,
-        re.I
-    )
-
-    match_lote = re.search(
-        r"LOTE\(S\):\s*(\d+)",
-        texto,
-        re.I
-    )
-
-    if match_quadra and match_lote:
-
-        quadra = match_quadra.group(1)
-
-        lote = match_lote.group(1)
-
-        return quadra, lote
-        
-    print("==============================")
+    print("=" * 50)
     print("NAO IDENTIFICOU UNIDADE")
-    print(texto[:3000])
-    
+    print(texto[:5000])
+
     return None, None
 
 
 # ======================================================
-# CLIENTE DA TABELA
+# CLIENTE
 # ======================================================
 
 def buscar_cliente(
@@ -193,7 +253,14 @@ def buscar_cliente(
         return None
 
     quadra = str(quadra).strip()
-    lote = str(lote).strip()
+
+    try:
+
+        lote = f"{int(lote):02d}"
+
+    except:
+
+        lote = str(lote).strip()
 
     unidade = f"Lote{quadra}.{lote}"
 
@@ -224,6 +291,7 @@ def buscar_cliente(
         return filtro.iloc[0]["Cliente"]
 
     return None
+
 
 # ======================================================
 # NOME FINAL
@@ -261,7 +329,7 @@ def processar_portal_cedros(
     erros = []
 
     arquivos_ignorados = []
-    
+
     for pdf in pdfs:
 
         try:
@@ -283,14 +351,94 @@ def processar_portal_cedros(
                     texto
                 )
             )
-        
+
+            # ==================================
+            # FALLBACK PELO NOME DO ARQUIVO
+            # ==================================
+
+            if not empreendimento:
+
+                nome_pdf = pdf.name.upper()
+
+                if (
+                    "JARDINS DE MARANGUAPE"
+                    in nome_pdf
+                ):
+
+                    empreendimento = (
+                        "Jardins de Maranguape"
+                    )
+
+                    print(
+                        "EMPREENDIMENTO EXTRAIDO DO NOME"
+                    )
+
+                elif (
+                    "PORTAL DOS CEDROS"
+                    in nome_pdf
+                    or
+                    "PORTAL DO CEDRO"
+                    in nome_pdf
+                ):
+
+                    empreendimento = (
+                        "Portal do Cedro"
+                    )
+
+                    print(
+                        "EMPREENDIMENTO EXTRAIDO DO NOME"
+                    )
+
+            if not quadra or not lote:
+
+                nome_pdf = pdf.name.upper()
+
+                match = re.search(
+                    r"LOTE\s+([A-Z])\s+UNIDADE\s+(\d+)",
+                    nome_pdf
+                )
+
+                if match:
+
+                    quadra = (
+                        match.group(1)
+                    )
+
+                    lote = (
+                        match.group(2)
+                    )
+
+                    print(
+                        "UNIDADE EXTRAIDA DO NOME:",
+                        quadra,
+                        lote
+                    )
+
             cliente = buscar_cliente(
                 tabela,
                 empreendimento,
                 quadra,
                 lote
             )
-            
+
+            print("=" * 50)
+            print(
+                "EMPREENDIMENTO:",
+                empreendimento
+            )
+            print(
+                "QUADRA:",
+                quadra
+            )
+            print(
+                "LOTE:",
+                lote
+            )
+            print(
+                "CLIENTE:",
+                cliente
+            )
+
             if (
                 not empreendimento
                 or not quadra
@@ -314,12 +462,13 @@ def processar_portal_cedros(
                 )
 
                 continue
-            nome = (
-                f"TESTE | "
-                f"EMP={empreendimento} | "
-                f"Q={quadra} | "
-                f"L={lote} | "
-                f"CLI={cliente}"
+
+            nome = gerar_nome(
+                empreendimento,
+                quadra,
+                lote,
+                cliente,
+                tipo
             )
 
             nomes.append(nome)
@@ -337,12 +486,17 @@ def processar_portal_cedros(
                 }
             )
 
-    print("================================")
+    print("=" * 50)
     print("TOTAL PDFs:", len(pdfs))
     print("RENOMEADOS:", len(nomes))
     print("ERROS:", len(erros))
 
     for erro in erros:
+
         print(erro)
-        
-    return nomes, erros, arquivos_ignorados
+
+    return (
+        nomes,
+        erros,
+        arquivos_ignorados
+    )
