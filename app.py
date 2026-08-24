@@ -619,7 +619,7 @@ def tela_renomeacao():
             )
         elif relatorio == "CRI PORTAL DO CEDROS":
 
-            nomes, erros = processar_portal_cedros(
+            nomes, erros, arquivos_ignorados = processar_portal_cedros(
                 pdfs,
                 tabela
             )
@@ -658,7 +658,11 @@ def tela_renomeacao():
         st.session_state[
             "erros_processamento"
         ] = erros
-
+        
+        st.session_state[
+            "arquivos_ignorados"
+        ] = arquivos_ignorados
+        
         st.session_state[
             "processados"
         ] = len(nomes)
@@ -840,7 +844,38 @@ def tela_assinaturas():
             file_name=nome_renomeado,
             mime="application/pdf"
         )
+        
+ignorados = st.session_state.get(
+    "arquivos_ignorados",
+    []
+)
 
+    if ignorados:
+
+        zip_buffer = io.BytesIO()
+
+        with zipfile.ZipFile(
+            zip_buffer,
+            "w",
+            zipfile.ZIP_DEFLATED
+        ) as zip_file:
+
+            for arquivo in ignorados:
+
+                zip_file.writestr(
+                    arquivo["nome"],
+                    arquivo["pdf_bytes"]
+                )
+
+        zip_buffer.seek(0)
+
+        st.download_button(
+            label="📦 Baixar Arquivos Ignorados",
+            data=zip_buffer,
+            file_name="Arquivos_Ignorados.zip",
+            mime="application/zip"
+        )
+    
         st.write(
             f"Arquivo será salvo como: {nome_renomeado}"
         )
