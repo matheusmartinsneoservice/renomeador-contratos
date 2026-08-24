@@ -259,12 +259,6 @@ def processar_portal_cedros(
                     texto
                 )
             )
-            print("================================")
-            print("PDF:", pdf.name)
-            print("EMPREENDIMENTO:", empreendimento)
-            print("TIPO:", tipo)
-            print("QUADRA:", quadra)
-            print("LOTE:", lote)
         
             cliente = buscar_cliente(
                 tabela,
@@ -272,23 +266,6 @@ def processar_portal_cedros(
                 quadra,
                 lote
             )
-            print("================================")
-            print("EMPREENDIMENTO EXTRAIDO:", empreendimento)
-            print("QUADRA EXTRAIDA:", quadra)
-            print("LOTE EXTRAIDO:", lote)
-
-            unidade = f"Lote{quadra}.{lote}"
-
-            print("UNIDADE MONTADA:", unidade)
-
-            print("TABELA:")
-            print(tabela)
-            print("================================")
-            print("BUSCANDO CLIENTE")
-            print("EMPREENDIMENTO:", empreendimento)
-            print("QUADRA:", quadra)
-            print("LOTE:", lote)
-            print("UNIDADE:", unidade)
             
             if (
                 not empreendimento
