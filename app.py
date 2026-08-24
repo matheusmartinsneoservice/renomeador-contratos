@@ -596,7 +596,7 @@ def tela_renomeacao():
 
             arquivos_renomeados, ignorados = (
                 processar_cri_brdu(
-                    arquivos_pdf
+                    arquivos_pdf,
                     tabela
                 )
             )
