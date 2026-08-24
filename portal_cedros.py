@@ -48,11 +48,20 @@ def extrair_texto(pdf):
         filetype="pdf"
     )
 
+    print("TOTAL PAGINAS:", len(documento))
+
     texto = ""
 
-    for pagina in documento:
+    for numero, pagina in enumerate(documento):
 
-        texto += pagina.get_text()
+        texto_pagina = pagina.get_text()
+
+        print(
+            f"Pagina {numero + 1}: "
+            f"{len(texto_pagina)} caracteres"
+        )
+
+        texto += texto_pagina
 
     documento.close()
 
