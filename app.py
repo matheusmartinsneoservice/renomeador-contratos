@@ -619,7 +619,7 @@ def tela_renomeacao():
             )
         elif relatorio == "CRI PORTAL DO CEDROS":
 
-            nomes = processar_portal_cedros(
+            nomes, erros = processar_portal_cedros(
                 pdfs,
                 tabela
             )
@@ -654,6 +654,10 @@ def tela_renomeacao():
         st.session_state[
             "arquivos_renomeados"
         ] = nomes
+        
+        st.session_state[
+            "erros_processamento"
+        ] = erros
 
         st.session_state[
             "processados"
@@ -661,7 +665,7 @@ def tela_renomeacao():
 
         st.session_state[
             "ignorados"
-        ] = 0
+        ] = len(erros)
 
         st.session_state[
             "passo"
@@ -710,13 +714,30 @@ def tela_resultado():
             f"Ignorados: {st.session_state.get('ignorados',0)}"
         )
 
+    # NOVO BLOCO
+    erros = st.session_state.get(
+        "erros_processamento",
+        []
+    )
+
+    if erros:
+
+        st.warning(
+            f"{len(erros)} arquivo(s) não processado(s)"
+        )
+
+        for erro in erros:
+
+            st.write(
+                f"❌ {erro}"
+            )
+
     if st.button("Próximo"):
 
         st.session_state["passo"] = 6
+
         st.rerun()
-
-
-
+        
 # =====================================
 # PASSO 6
 # =====================================
