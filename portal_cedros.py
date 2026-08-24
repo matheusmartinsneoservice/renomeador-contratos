@@ -65,7 +65,7 @@ def extrair_texto(pdf):
 
 def identificar_empreendimento(texto):
 
-    texto_inicio = normalizar(texto[:4000])
+    texto = normalizar(texto)
 
     if "JARDINS DE MARANGUAPE" in texto:
 
@@ -75,12 +75,13 @@ def identificar_empreendimento(texto):
         "PORTAL DO CEDRO" in texto
         or
         "PORTAL DA CEDRO" in texto
+        or
+        "PORTAL CEDRO" in texto
     ):
 
         return "Portal do Cedro"
 
     return None
-
 
 # ======================================================
 # TIPO
@@ -107,7 +108,7 @@ def identificar_tipo(texto):
 
 def extrair_unidade(texto):
 
-    texto_inicio = normalizar(texto[:4000])
+    texto = normalizar(texto)
 
     # ==================================
     # DISTRATO
