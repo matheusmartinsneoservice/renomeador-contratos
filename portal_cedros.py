@@ -295,12 +295,13 @@ def processar_portal_cedros(
             erros.append(
                 f"{pdf.name} - {erro}"
             )
+        
+    print("================================")
+    print("TOTAL PDFs:", len(pdfs))
+    print("RENOMEADOS:", len(nomes))
+    print("ERROS:", len(erros))
 
-    if erros:
-
-        print(
-            "ERROS PORTAL CEDROS:",
-            erros
-        )
-
+    for erro in erros:
+        print(erro)
+        
     return nomes
