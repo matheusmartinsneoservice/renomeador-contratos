@@ -80,6 +80,10 @@ def identificar_empreendimento(texto):
     ):
 
         return "Portal do Cedro"
+        
+    print("================================")
+    print("NAO IDENTIFICOU EMPREENDIMENTO")
+    print(texto[:3000])
 
     return None
 
@@ -154,7 +158,11 @@ def extrair_unidade(texto):
         lote = match_lote.group(1)
 
         return quadra, lote
-
+        
+    print("==============================")
+    print("NAO IDENTIFICOU UNIDADE")
+    print(texto[:3000])
+    
     return None, None
 
 
