@@ -193,7 +193,7 @@ def buscar_cliente(
             unidade.upper()
         )
     ]
-
+    print("RESULTADOS:", len(filtro))
     if len(filtro) > 0:
 
         return (
@@ -272,6 +272,24 @@ def processar_portal_cedros(
                 quadra,
                 lote
             )
+            print("================================")
+            print("EMPREENDIMENTO EXTRAIDO:", empreendimento)
+            print("QUADRA EXTRAIDA:", quadra)
+            print("LOTE EXTRAIDO:", lote)
+
+            unidade = f"Lote{quadra}.{lote}"
+
+            print("UNIDADE MONTADA:", unidade)
+
+            print("TABELA:")
+            print(tabela)
+            print("================================")
+            print("BUSCANDO CLIENTE")
+            print("EMPREENDIMENTO:", empreendimento)
+            print("QUADRA:", quadra)
+            print("LOTE:", lote)
+            print("UNIDADE:", unidade)
+            
             if (
                 not empreendimento
                 or not quadra
