@@ -137,13 +137,13 @@ def extrair_unidade(texto):
 
     match_quadra = re.search(
         r"QUADRA:\s*([A-Z])",
-        texto_inicio,
+        texto,
         re.I
     )
 
     match_lote = re.search(
         r"LOTE\(S\):\s*(\d+)",
-        texto_inicio,
+        texto,
         re.I
     )
 
