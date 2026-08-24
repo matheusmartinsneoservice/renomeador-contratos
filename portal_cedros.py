@@ -26,6 +26,7 @@ def normalizar(texto):
     }
 
     for antigo, novo in mapa.items():
+
         texto = texto.replace(
             antigo,
             novo
@@ -35,7 +36,7 @@ def normalizar(texto):
 
 
 # ======================================================
-# EXTRAÇÃO DE TEXTO
+# EXTRAÇÃO PDF
 # ======================================================
 
 def extrair_texto(pdf):
@@ -50,6 +51,7 @@ def extrair_texto(pdf):
     texto = ""
 
     for pagina in documento:
+
         texto += pagina.get_text()
 
     documento.close()
@@ -66,20 +68,22 @@ def identificar_empreendimento(texto):
     texto = normalizar(texto)
 
     if "JARDINS DE MARANGUAPE" in texto:
-        return "JARDINS DE MARANGUAPE"
+
+        return "Jardins de Maranguape"
 
     if (
         "PORTAL DO CEDRO" in texto
         or
         "PORTAL DA CEDRO" in texto
     ):
-        return "PORTAL DO CEDRO"
+
+        return "Portal do Cedro"
 
     return None
 
 
 # ======================================================
-# TIPO DOCUMENTO
+# TIPO
 # ======================================================
 
 def identificar_tipo(texto):
@@ -87,9 +91,11 @@ def identificar_tipo(texto):
     texto = normalizar(texto)
 
     if "INSTRUMENTO PARTICULAR DE DISTRATO" in texto:
+
         return "DISTRATO"
 
     if "PROMESSA DE COMPRA E VENDA" in texto:
+
         return "CONTRATO"
 
     return "DESCONHECIDO"
@@ -103,11 +109,10 @@ def extrair_unidade(texto):
 
     texto = normalizar(texto)
 
-    # --------------------------------------------------
+    # ==================================
     # DISTRATO
     # lote n. 55 – quadra B
-    # lote n. 34 – quadra N
-    # --------------------------------------------------
+    # ==================================
 
     match = re.search(
         r"LOTE\s*N\.?\s*(\d+)\s*[–\-]\s*QUADRA\s*([A-Z])",
@@ -118,18 +123,19 @@ def extrair_unidade(texto):
     if match:
 
         lote = match.group(1)
+
         quadra = match.group(2)
 
         return quadra, lote
 
-    # --------------------------------------------------
+    # ==================================
     # CONTRATO
     # Quadra: G
     # Lote(s): 31
-    # --------------------------------------------------
+    # ==================================
 
     match_quadra = re.search(
-        r"QUADRA\s*:[A-Z?\s*(])",
+        r"QUADRA\s*:?\s*([A-Z])",
         texto,
         re.I
     )
@@ -143,6 +149,7 @@ def extrair_unidade(texto):
     if match_quadra and match_lote:
 
         quadra = match_quadra.group(1)
+
         lote = match_lote.group(1)
 
         return quadra, lote
@@ -151,50 +158,43 @@ def extrair_unidade(texto):
 
 
 # ======================================================
-# BUSCA CLIENTE PLANILHA
+# CLIENTE DA TABELA
 # ======================================================
 
 def buscar_cliente(
-    df,
+    tabela,
     empreendimento,
     quadra,
     lote
 ):
 
-    if empreendimento is None:
-        return None
+    unidade = f"Lote{quadra}.{lote}"
 
-    filtro = df[
+    filtro = tabela[
         (
-            df["EMPREENDIMENTO"]
+            tabela["Empreendimento"]
             .astype(str)
             .str.upper()
-            ==
-            empreendimento
-        )
-        &
-        (
-            df["QUADRA"]
-            .astype(str)
-            .str.upper()
-            ==
-            str(quadra).upper()
-        )
-        &
-        (
-            df["LOTE"]
-            .astype(str)
             .str.strip()
             ==
-            str(lote).strip()
+            empreendimento.upper()
+        )
+        &
+        (
+            tabela["Unidade"]
+            .astype(str)
+            .str.upper()
+            .str.strip()
+            ==
+            unidade.upper()
         )
     ]
 
-    if len(filtro):
+    if len(filtro) > 0:
 
-        return str(
-            filtro.iloc[0]["CLIENTE"]
-        ).strip()
+        return (
+            filtro.iloc[0]["Cliente"]
+        )
 
     return None
 
@@ -222,19 +222,19 @@ def gerar_nome(
 
 
 # ======================================================
-# PROCESSADOR PRINCIPAL
+# PROCESSAMENTO
 # ======================================================
 
 def processar_portal_cedros(
-    arquivos_pdf,
-    df_portal_cedros
+    pdfs,
+    tabela
 ):
 
-    arquivos_renomeados = []
+    nomes = []
 
-    ignorados = []
+    erros = []
 
-    for pdf in arquivos_pdf:
+    for pdf in pdfs:
 
         try:
 
@@ -257,46 +257,26 @@ def processar_portal_cedros(
             )
 
             cliente = buscar_cliente(
-                df_portal_cedros,
+                tabela,
                 empreendimento,
                 quadra,
                 lote
             )
 
-            print(
-                f"EMPREENDIMENTO={empreendimento}"
-            )
-
-            print(
-                f"TIPO={tipo}"
-            )
-
-            print(
-                f"QUADRA={quadra}"
-            )
-
-            print(
-                f"LOTE={lote}"
-            )
-
-            print(
-                f"CLIENTE={cliente}"
-            )
-
             if (
-                empreendimento is None
-                or quadra is None
-                or lote is None
-                or cliente is None
+                not empreendimento
+                or not quadra
+                or not lote
+                or not cliente
             ):
 
-                ignorados.append(
-                    f"DADOS NAO LOCALIZADOS - {pdf.name}"
+                erros.append(
+                    f"{pdf.name} - dados não encontrados"
                 )
 
                 continue
 
-            novo_nome = gerar_nome(
+            nome = gerar_nome(
                 empreendimento,
                 quadra,
                 lote,
@@ -304,20 +284,19 @@ def processar_portal_cedros(
                 tipo
             )
 
-            arquivos_renomeados.append(
-                (
-                    pdf,
-                    novo_nome
-                )
-            )
+            nomes.append(nome)
 
         except Exception as erro:
 
-            ignorados.append(
+            erros.append(
                 f"{pdf.name} - {erro}"
             )
 
-    return (
-        arquivos_renomeados,
-        ignorados
-    )
+    if erros:
+
+        print(
+            "ERROS PORTAL CEDROS:",
+            erros
+        )
+
+    return nomes
