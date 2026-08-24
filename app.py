@@ -575,7 +575,11 @@ def tela_renomeacao():
         nomes = []
 
         contratos_processados = []
+        
+        erros = []
 
+        arquivos_ignorados = []
+        
         if relatorio == "CRI BAUTEN TEKOÁ":
 
             nomes = processar_tekoa(
@@ -624,7 +628,7 @@ def tela_renomeacao():
                 tabela
             )
     
-        elif empreendimento == "CRI BRDU":
+        elif empreendimento == "CRI BRDU | 4ª EMISSÃO":
 
             arquivos_renomeados, ignorados = (
                 processar_cri_brdu(
