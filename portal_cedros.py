@@ -168,6 +168,13 @@ def buscar_cliente(
     lote
 ):
 
+    if (
+        empreendimento is None
+        or quadra is None
+        or lote is None
+    ):
+        return None
+
     quadra = str(quadra).strip()
 
     lote = str(lote).strip()
