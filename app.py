@@ -54,6 +54,7 @@ from gran_paradiso import processar_gran_paradiso
 from innovar import processar_innovar
 from fgr_berlim import processar_fgr_berlim
 from cri_brdu import processar_cri_brdu
+from portal_cedros import processar_portal_cedros
 import gran_paradiso
 
 # =====================================
@@ -164,7 +165,7 @@ RELATORIOS = {
         "tipo": "QUADRA_LOTE",
 
         "sharepoint":
-        "https://empresa.sharepoint.com/.../PORTAL_CEDRO"
+        "https://arquivosneoservice.sharepoint.com/:f:/g/IgCtpPPLtT1mTrMLJriQ0TtmAdyBTSpahqeKDFVtRtDTrUg?e=zaw7mG"
     },
 
     "CRI SER RIO": {
@@ -363,7 +364,19 @@ def tela_relacao():
     Cliente: BARBARA ALENCAR COELHO
     """
         )
-            
+    elif relatorio == "CRI PORTAL DO CEDROS":
+
+        st.info(
+            """
+    Exemplo de preenchimento:
+
+    Empreendimento: PORTAL DO CEDRO
+    Quadra: G
+    Lote: 31
+    Cliente: FRANCISCO EDBERTO DOS SANTOS
+    """
+        )  
+        
     tipo = RELATORIOS[relatorio]["tipo"]
 
     if tipo == "UNIDADE":
@@ -591,7 +604,13 @@ def tela_renomeacao():
                 pdfs,
                 tabela
             )
-            
+        elif relatorio == "CRI PORTAL DO CEDROS":
+
+            nomes = processar_portal_cedros(
+                pdfs,
+                tabela
+            )
+    
         elif empreendimento == "CRI BRDU":
 
             arquivos_renomeados, ignorados = (
